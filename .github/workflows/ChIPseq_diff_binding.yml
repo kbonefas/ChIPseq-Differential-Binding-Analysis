@@ -1,0 +1,16 @@
+name: siwase
+
+on: 2/5/2020
+
+jobs: Identify differentially bound genomic regions using ChIP-seq data
+  build: 
+
+    runs-on: MACS2, Diffbind, Bedtools
+
+    steps:
+    1. Peak calling with MACS2
+    2. Generate common peak sets with Diffbind
+    3. Remove black-listed regions by bedtools
+    4. Count reads within peaks by bedtools.
+    5. Perform differential bindign analysis with DEseq2
+    
