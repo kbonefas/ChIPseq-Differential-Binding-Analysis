@@ -8,9 +8,10 @@ jobs: Identify differentially bound genomic regions using ChIP-seq data
     runs-on: MACS2, Diffbind, Bedtools
 
     steps:
-    1. Peak calling with MACS2
-    2. Generate common peak sets with Diffbind
-    3. Remove black-listed regions by bedtools
-    4. Count reads within peaks by bedtools.
-    5. Perform differential bindign analysis with DEseq2
+    1. Setup MACS2 environment
+    2. Peak calling with MACS2
+    3. Generate common peak sets with Diffbind
+    4. Remove black-listed regions by bedtools
+    5. Count reads within peaks by bedtools.
+    6. Perform differential bindign analysis with DEseq2
     
