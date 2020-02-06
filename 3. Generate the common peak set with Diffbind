@@ -1,0 +1,23 @@
+#Read Diffbind tutorial at http://bioconductor.org/packages/release/bioc/vignettes/DiffBind/inst/doc/DiffBind.pdf
+#At Rstudio, install Diffbind
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+BiocManager::install("DiffBind")
+
+#load nessesary packages
+library(AnnotationDbi)
+library(GO.db)
+library(DiffBind)
+
+#Generate consensus peaksets for all DM and 2A2BCKO replicates
+#example sample sheet can be found at the top page
+#change number of minOverlap based on your need
+
+DM_2A2BCKO <- dba(sampleSheet = "C:/Users/siwase/Dropbox/Documents/Manuscripts/KDM5C_KMT2A_DM/NatureCommunications/DM_ChIPseq/Kerimoglu_data/all_samplesheet_2AB_CKO.csv")
+consensus_peaks <- dba.peakset(DM_2A2BCKO, consensus = DBA_CONDITION, minOverlap = 3, bRetrieve = TRUE)
+consensus_peaks_df <- as.data.frame(consensus_peaks)
+consensus_peaks_df <- consensus_peaks_df[c(1:3)]
+consensus_peaks_df$seqnames <- as.character(as.factor(consensus_peaks_df$seqnames))
+write.table(consensus_peaks_df, file='consensus_peaks.bed', sep = "\t", col.names = FALSE, row.names = FALSE)
