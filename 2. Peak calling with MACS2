@@ -1,6 +1,10 @@
 #peakcalling with MACS2
+#before running the command check the follwing. 
+#Is your input data deep enough? Combine all the input bam files. 50M reads are needed at least. Deeper the input, more precise the peak calling. 
+
 #python script
 #edit the path, file names, and options for callpeak command
+#call peak for each replicate no need to combine at this point. 
 
 #MACS2 peak calling
 #02/03/2020
