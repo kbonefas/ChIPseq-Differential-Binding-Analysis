@@ -1,0 +1,32 @@
+#remove black listed region with bedtools
+
+#download black listed region (BED format) at https://sites.google.com/site/anshulkundaje/projects/blacklists
+
+##Python script
+#20191128
+import sys
+import os
+
+#change this
+path1= '/scratch/iwase-lab/SHIGEKI/MACS_20191123'
+path2= '/scratch/iwase-lab/SHIGEKI'
+
+#change this
+y=[
+
+'2A1_peaks.narrowPeak',
+'2A2_peaks.narrowPeak',
+'2A3_peaks.narrowPeak',
+'5C1_peaks.narrowPeak',
+'5C2_peaks.narrowPeak',
+'5C3_peaks.narrowPeak',
+'DM1_peaks.narrowPeak',
+'DM2_peaks.narrowPeak',
+'DM3_peaks.narrowPeak',
+'WT1_peaks.narrowPeak',
+'WT2_peaks.narrowPeak'
+
+]
+for i in y:
+	
+        os.system('bedtools intersect -a %s/%s -b %s/mm10-blacklist.v2.bed -v > %s.filtered.bed' % (path1,i,path2,i))
