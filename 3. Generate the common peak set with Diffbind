@@ -12,7 +12,7 @@ library(GO.db)
 library(DiffBind)
 
 #Generate consensus peaksets for all DM and 2A2BCKO replicates
-#example sample sheet can be found at the top page
+#example sample sheet is "all_samplesheet_2AB_CKO.csv"
 #change number of minOverlap based on your need
 
 DM_2A2BCKO <- dba(sampleSheet = "C:/Users/siwase/Dropbox/Documents/Manuscripts/KDM5C_KMT2A_DM/NatureCommunications/DM_ChIPseq/Kerimoglu_data/all_samplesheet_2AB_CKO.csv")
