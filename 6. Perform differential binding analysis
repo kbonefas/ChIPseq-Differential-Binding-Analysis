@@ -2,7 +2,7 @@
 
 #at R studio
 
-#import black-list removed files
+#import read count table (black-list removed)
 DM_CKO_peaks_counts_filtered <- read.delim("C:/Users/siwase/Dropbox/Documents/Manuscripts/KDM5C_KMT2A_DM/NatureCommunications/DM_ChIPseq/Kerimoglu_data/DM_CKO_peaks_counts_filtered.bed", header=FALSE)
 DM_CKO_peaks_counts <- DM_CKO_peaks_counts_filtered
 colnames(DM_CKO_peaks_counts) <- c('chr','start','end',
