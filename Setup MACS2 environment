@@ -1,0 +1,9 @@
+#Peak calling use MACS2 
+#Read MACS2 tutorial first https://github.com/taoliu/MACS
+
+#You may first need to set up an environment for MACS2, which required Python > 3.6 
+#at terminal *type y when asked. 
+
+conda create -n test_macs2 python=3.6
+conda activate test_macs2
+conda install -c bioconda macs2
