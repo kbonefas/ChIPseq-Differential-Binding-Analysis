@@ -1,0 +1,30 @@
+#Use genome browser to validate peak calling
+##upload bigwig and bed files to IGV or UCSC
+
+##below is instruction for uploading files to UCSC
+
+###Bigwig
+
+1. Make new directory at /scratch/webserver/siwase (replace siwase with your directory)
+2. Move the bigwig files to webserver directory. /scratch/webserver/siwase/new_directory/new.bw
+3. Go to UCSC browser, select the genome, My Data --> Custum track
+4. track type=bigWig name="H3K4me1_0h_JF1_rep1" 
+5. Past follwoing to the URL box (change parameters as needed, see instruction at UCSC browser)
+bigDataUrl=https://hkgateway.med.umich.edu/public/iwaselab/new_directory/new.bw visibility=full color=0,64,255 autoScale=off alwaysZero=off gridDefault=off maxHeightPixels=60 graphType=bar viewLimits=0:5 windowingFunction=mean smoothingWindow=2 altColor=0,64,255
+
+
+###Bed
+
+1. Make new directory at /scratch/webserver/siwase (replace siwase with your directory)
+2. Before moving narrowpeak files (MACS2 output BED format), add the following line on the top row of narrow peak file
+
+track type=narrowPeak name=H3K4me3_48h_JF1_rep1
+
+3. Move the bigwig files to webserver directory. /scratch/webserver/siwase/new_directory/new.narrowPeak
+4. At the UCSC custom track URL box, paste following
+
+bigDataUrl=https://hkgateway.med.umich.edu/public/iwaselab/new_directory/new.narrowPeak
+
+
+
+
