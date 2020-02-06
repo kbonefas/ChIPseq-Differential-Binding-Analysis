@@ -1,0 +1,64 @@
+#peakcalling with MACS2
+#python script
+#edit the path, file names, and options for callpeak command
+
+#MACS2 peak calling
+#02/03/2020
+
+import sys
+import os
+#import time
+
+path = '/nfs/value/iwase/SHIGEKI/KDM5C_XCI/ASChIPseq/Dec_2019_H3K4me_rep1_merge/Merged_bam/Nsorted_bam/SNP_bam/Csorted_bam'
+
+x = [
+
+'C_SNP_N48hK4Me3XES1_129_rep1.bam:::H3K4me3_48h_129_rep1',
+'C_SNP_N48hK4Me2XES1_129_rep1.bam:::H3K4me2_48h_129_rep1',
+'C_SNP_N48hK4Me1XES1_129_rep1.bam:::H3K4me1_48h_129_rep1',
+'C_SNP_N24hK4Me3XES1_129_rep1.bam:::H3K4me3_24h_129_rep1',
+'C_SNP_N24hK4Me2XES1_129_rep1.bam:::H3K4me2_24h_129_rep1',
+'C_SNP_N24hK4Me1XES1_129_rep1.bam:::H3K4me1_24h_129_rep1',
+'C_SNP_N0hK4Me3XES1_129_rep1.bam:::H3K4me3_0h_129_rep1',
+'C_SNP_N0hK4Me2XES1_129_rep1.bam:::H3K4me2_0h_129_rep1',
+'C_SNP_N0hK4Me1XES1_129_rep1.bam:::H3K4me1_0h_129_rep1'
+
+]
+
+for i in x:
+
+	b,c = i.split(":::")
+
+	a = 'macs2 callpeak -f BAMPE -g 1.87e9 -q 0.01 --verbose 3 -t %s/%s -c /nfs/value/iwase/SHIGEKI/KDM5C_XCI/ASChIPseq/Input_MJD_merge/Merged_Input_129_MJD.bam -n %s --outdir . ' % (path, b, c)
+
+
+	os.system('nohup %s &' % (a))
+	os.system('sleep 10')
+
+
+y = [
+
+'C_SNP_N48hK4Me3XES1_JF1_rep1.bam:::H3K4me3_48h_JF1_rep1',
+'C_SNP_N48hK4Me2XES1_JF1_rep1.bam:::H3K4me2_48h_JF1_rep1',
+'C_SNP_N48hK4Me1XES1_JF1_rep1.bam:::H3K4me1_48h_JF1_rep1',
+'C_SNP_N24hK4Me3XES1_JF1_rep1.bam:::H3K4me3_24h_JF1_rep1',
+'C_SNP_N24hK4Me2XES1_JF1_rep1.bam:::H3K4me2_24h_JF1_rep1',
+'C_SNP_N24hK4Me1XES1_JF1_rep1.bam:::H3K4me1_24h_JF1_rep1',
+'C_SNP_N0hK4Me3XES1_JF1_rep1.bam:::H3K4me3_0h_JF1_rep1',
+'C_SNP_N0hK4Me2XES1_JF1_rep1.bam:::H3K4me2_0h_JF1_rep1',
+'C_SNP_N0hK4Me1XES1_JF1_rep1.bam:::H3K4me1_0h_JF1_rep1'
+
+]
+
+for i in y:
+	d,e = i.split(":::")
+	
+	f = 'macs2 callpeak -f BAMPE -g 1.87e9 -q 0.01 --verbose 3 -t %s/%s -c /nfs/value/iwase/SHIGEKI/KDM5C_XCI/ASChIPseq/Input_MJD_merge/Merged_Input_JF1_MJD.bam -n %s --outdir . ' % (path, d, e)
+
+
+
+	os.system('nohup %s &' % (f))
+	os.system('sleep 10')
+
+# store the python script in a directory 
+# at terminal run 'python filename.py' 
