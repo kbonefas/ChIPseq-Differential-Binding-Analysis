@@ -23,7 +23,7 @@ track type=narrowPeak name=H3K4me3_48h_JF1_rep1
 3. Move the bigwig files to webserver directory. /scratch/webserver/siwase/new_directory/new.narrowPeak
 4. At the UCSC custom track URL box, paste following
 
-bigDataUrl=https://hkgateway.med.umich.edu/public/iwaselab/new_directory/new.narrowPeak
+https://hkgateway.med.umich.edu/public/iwaselab/new_directory/new.narrowPeak
 
 
 
