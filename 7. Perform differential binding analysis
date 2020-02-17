@@ -1,76 +1,323 @@
-#Differential bindign analysis with DEseq2
-
-#at R studio
-
-#import read count table (black-list removed)
-DM_CKO_peaks_counts_filtered <- read.delim("C:/Users/siwase/Dropbox/Documents/Manuscripts/KDM5C_KMT2A_DM/NatureCommunications/DM_ChIPseq/Kerimoglu_data/DM_CKO_peaks_counts_filtered.bed", header=FALSE)
-DM_CKO_peaks_counts <- DM_CKO_peaks_counts_filtered
-colnames(DM_CKO_peaks_counts) <- c('chr','start','end',
-                                   'Kmt2a_Ctrl_rep1', 'Kmt2a_Ctrl_rep2', 'Kmt2a_Ctrl_rep3', 'Kmt2a_Ctrl_rep4', 'Kmt2a_Ctrl_rep5', 'Kmt2a_CKO_rep1', 'Kmt2a_CKO_rep2', 'Kmt2a_CKO_rep3',
-                                   'Kmt2b_Ctrl_rep1', 'Kmt2b_Ctrl_rep2', 'Kmt2b_Ctrl_rep3', 'Kmt2b_Ctrl_rep4', 'Kmt2b_Ctrl_rep5', 'Kmt2b_CKO_rep1', 'Kmt2b_CKO_rep2', 'Kmt2b_CKO_rep3', 'Kmt2b_CKO_rep4', 'Kmt2b_CKO_rep5',
-                                   'WT_rep1', 'WT_rep2', 'Kmt2a_HET_rep1', 'Kmt2a_HET_rep2', 'Kmt2a_HET_rep3', 'Kdm5c_KO_rep1', 'Kdm5c_KO_rep2', 'Kdm5c_KO_rep3', 'DM_rep1', 'DM_rep2', 'DM_rep3')
-
 #add peaknames
-n <- 29403
+n <- 25872
 prefix <- "peak"
 suffix <- seq(1:n)
-peak.name <- paste(prefix,suffix,sep="")
-DM_CKO_peaks_counts <- cbind(DM_CKO_peaks_counts, peak.name)
-
+peak.names <- paste(prefix,suffix,sep="")
+peaks_counts <- cbind(peaks_counts, peak.names)
 #remove Genomic Coordinates (GC)
-DM_CKO_wo_GC <- DM_CKO_peaks_counts[ -c(1:3)]
-row.names(DM_CKO_wo_GC) <- DM_CKO_wo_GC$peak.name
-DM_CKO_wo_GC$peak.name <- NULL
-
+peak_counts_wo_GC <- peaks_counts[ -c(1:3)]
+row.names(peak_counts_wo_GC) <- peak_counts_wo_GC$peak.names
+peak_counts_wo_GC[12] <- NULL
+  
+write.table(peaks_counts, file='peaks_counts_GC.txt', sep='\t', row.names=FALSE)
+  
 #DEseq2analysis
 library(DESeq2)
-Design_1226 <- data.frame(row.names = colnames(DM_CKO_wo_GC), genotype = c("Kmt2a_Ctrl", "Kmt2a_Ctrl", "Kmt2a_Ctrl", "Kmt2a_Ctrl", "Kmt2a_Ctrl",
-                                                                           "Kmt2a_CKO", "Kmt2a_CKO", "Kmt2a_CKO",
-                                                                           "Kmt2b_Ctrl", "Kmt2b_Ctrl", "Kmt2b_Ctrl", "Kmt2b_Ctrl", "Kmt2b_Ctrl",
-                                                                           "Kmt2b_CKO", "Kmt2b_CKO", "Kmt2b_CKO", "Kmt2b_CKO", "Kmt2b_CKO",
-                                                                           "WT", "WT", "Kmt2a_HET", "Kmt2a_HET", "Kmt2a_HET", "Kdm5c_KO", "Kdm5c_KO", "Kdm5c_KO", "DM", "DM", "DM"),
-                          sex = c("female", "male", "male", "female", "male", "male", "male", "female",
-                                  "female", "female", "male", "male", "male", "female", "female", "female", "male", "male",
-                                  "male", "male", "male", "male", "male", "male", "male", "male", "male", "male", "male"), 
-                          brain_region = c("HIP", "HIP", "HIP", "HIP", "HIP", "HIP", "HIP", "HIP",
-                                           "HIP", "HIP", "HIP", "HIP", "HIP", "HIP", "HIP", "HIP", "HIP", "HIP",
-                                           "AMY", "AMY", "AMY", "AMY", "AMY", "AMY", "AMY", "AMY", "AMY", "AMY", "AMY"))
+Design_DEseq2_1127 <- data.frame(row.names = colnames(peak_counts_wo_GC), genotype = c("WT", "WT", "Kmt2a_HET", "Kmt2a_HET", "Kmt2a_HET", "Kdm5c_KO", "Kdm5c_KO", "Kdm5c_KO", "DM", "DM", "DM"))
+dds_1127 <- DESeqDataSetFromMatrix(peak_counts_wo_GC, colData=Design_DEseq2_1127, design= ~genotype)
+dds_1127_run <- DESeq(dds_1127, betaPrior = TRUE)
+Restable_1127_WTvs2a <- results(dds_1127_run, contrast=c("genotype", "Kmt2a_HET", "WT"), alpha=0.05)
+Restable_1127_WTvs5c <- results(dds_1127_run, contrast=c("genotype", "Kdm5c_KO", "WT"), alpha=0.05)
+Restable_1127_WTvsDM <- results(dds_1127_run, contrast=c("genotype", "DM", "WT"), alpha=0.05)
 
-Design_1226
-dds_1226 <- DESeqDataSetFromMatrix(DM_CKO_wo_GC, colData=Design_1226, design= ~ sex + genotype)
-dds_1226_run <- DESeq(dds_1226, betaPrior = TRUE)
+summary(Restable_1127_WTvs2a)
+summary(Restable_1127_WTvs5c)
+summary(Restable_1127_WTvsDM)
 
-#PCA plots
-vsd_1226 <- vst(dds_1226, blind = TRUE)  
-head(assay(vsd_1226), 3)
-library(ggplot2)
-plotPCA(vsd_1226, intgroup = "genotype")
-plotPCA(vsd_1226, intgroup = "sex")
-plotPCA(vsd_1226, intgroup = "brain_region")
+#inspect default size factor and incorporate SNAP normalization factor
+#default_size_factor 
+dds <- estimateSizeFactors(dds_1127_run)
+sizeFactors(dds)
 
-vsd_1226_local <- vst(dds_1226, blind = TRUE, fitType = 'local')  
-head(assay(vsd_1226_local), 3)
-library(ggplot2)
-plotPCA(vsd_1226_local, intgroup = "genotype")
-plotPCA(vsd_1226_local, intgroup = "sex")
-plotPCA(vsd_1226_local, intgroup = "brain_region")
+#snap sizefactors
 
-Restable_1226_2aCKOvsCtrl <- results(dds_1226_run, contrast=c("genotype", "Kmt2a_CKO", "Kmt2a_Ctrl"), alpha=0.2)
-summary(Restable_1226_2aCKOvsCtrl)
-Restable_1226_2bCKOvsCtrl <- results(dds_1226_run, contrast=c("genotype", "Kmt2b_CKO", "Kmt2b_Ctrl"), alpha=0.05)
-summary(Restable_1226_2bCKOvsCtrl)
-Restable_1226_5CKOvsCtrl <- results(dds_1226_run, contrast=c("genotype", "Kdm5c_KO", "WT"), alpha=0.05)
-summary(Restable_1226_5CKOvsCtrl)
-Restable_1226_2AHetvsCtrl <- results(dds_1226_run, contrast=c("genotype", "Kmt2a_HET", "WT"), alpha=0.05)
-summary(Restable_1226_2AHetvsCtrl)
-Restable_1226_DMvsCtrl <- results(dds_1226_run, contrast=c("genotype", "DM", "WT"), alpha=0.05)
-summary(Restable_1226_DMvsCtrl)
+sizeFactors(dds_1127_run) <- c(1, 1.16, 1.18, 1.01, 1.01, 1.00, 1.07, 0.96, 1.19, 0.99, 1.13)
+sizeFactors(dds_1127_run) 
 
-#MA plot
-par(mfrow=c(2,3))
+#run result command again after changing size factor 
+#Dont need to run DEseq command
+Restable_1127_WTvs2a <- results(dds_1127_run, contrast=c("genotype", "Kmt2a_HET", "WT"), alpha=0.05)
+Restable_1127_WTvs5c <- results(dds_1127_run, contrast=c("genotype", "Kdm5c_KO", "WT"), alpha=0.05)
+Restable_1127_WTvsDM <- results(dds_1127_run, contrast=c("genotype", "DM", "WT"), alpha=0.05)
 
-plotMA(Restable_1226_2aCKOvsCtrl, ylim=c(-4,4), cex=.8)
-plotMA(Restable_1226_2bCKOvsCtrl, ylim=c(-4,4), cex=.8)
-plotMA(Restable_1226_2AHetvsCtrl, ylim=c(-4,4), cex=.8)
-plotMA(Restable_1226_5CKOvsCtrl, ylim=c(-4,4), cex=.8)
-plotMA(Restable_1226_DMvsCtrl, ylim=c(-4,4), cex=.8)
+#confirm the new scaling factor is used
+sizeFactors(dds_1127_run) 
+
+##Making MA plots
+par(mfrow=c(1,3))
+
+plotMA(Restable_1127_WTvs2a, ylim=c(-1.5,1.5), cex=.8)
+plotMA(Restable_1127_WTvs5c, ylim=c(-1.5,1.5), cex=.8)
+plotMA(Restable_1127_WTvsDM, ylim=c(-1.5,1.5), cex=.8)
+
+#making volcano plots
+
+library(EnhancedVolcano)
+EnhancedVolcano(Restable_1127_WTvs2a,
+                lab = rownames(Restable_1127_WTvs2a),
+                title = 'AMY_2AvsWT',
+                x = 'log2FoldChange', xlim = c(-1,1), 
+                y = 'padj', ylim = c(0,5), 
+                xlab = bquote(~Log[2]~ 'fold change'),
+                ylab = bquote(~-Log[10]~adjusted~italic(P)),
+                pCutoff = 0.05,
+                FCcutoff = FALSE,
+                colAlpha = 0.5,
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE,
+                col=c('gray10','gray10','red','red'),
+                legendPosition = 'bottom',
+                legendLabSize = 10,
+                legendIconSize = 3.0)
+
+EnhancedVolcano(Restable_1127_WTvs5c,
+                lab = rownames(Restable_1127_WTvs5c),
+                title = 'AMY_5CvsWT',
+                x = 'log2FoldChange', xlim = c(-1,1), 
+                y = 'padj', ylim = c(0,5), 
+                xlab = bquote(~Log[2]~ 'fold change'),
+                ylab = bquote(~-Log[10]~adjusted~italic(P)),
+                pCutoff = 0.05,
+                FCcutoff = FALSE,
+                colAlpha = 0.5,
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE,
+                col=c('gray10','gray10','red','red'),
+                legendPosition = 'bottom',
+                legendLabSize = 10,
+                legendIconSize = 3.0)
+
+EnhancedVolcano(Restable_1127_WTvsDM,
+                lab = rownames(Restable_1127_WTvsDM),
+                title = 'AMY_DMvsWT',
+                x = 'log2FoldChange', xlim = c(-1,1), 
+                y = 'padj', ylim = c(0,5), 
+                xlab = bquote(~Log[2]~ 'fold change'),
+                ylab = bquote(~-Log[10]~adjusted~italic(P)),
+                pCutoff = 0.05,
+                FCcutoff = FALSE,
+                colAlpha = 0.5,
+                gridlines.major = FALSE,
+                gridlines.minor = FALSE,
+                col=c('gray10','gray10','red','red'),
+                legendPosition = 'bottom',
+                legendLabSize = 10,
+                legendIconSize = 3.0)
+  
+  #combining the three reports
+  ##change colnames in each file to make them unique
+  cols_2a_2 <- c("basemean_2a", "FC_2a", "FCSE_2a", "stat_2a", "p_2a", "padj_2a")
+  cols_5c_2 <- c("basemean_5c", "FC_5c", "FCSE_5c", "stat_5c", "p_5c", "padj_5c")
+  cols_dm_2 <- c("basemean_dm", "FC_dm", "FCSE_dm", "stat_dm", "p_dm", "padj_dm")
+  
+  colnames(Restable_1127_WTvs5c) <- cols_5c_2
+  colnames(Restable_1127_WTvs2a) <- cols_2a_2
+  colnames(Restable_1127_WTvsDM) <- cols_dm_2
+  
+  Restable_1127_WTvs5c$peak.name <- rownames(Restable_1127_WTvs5c)
+  Restable_1127_WTvs2a$peak.name <- rownames(Restable_1127_WTvs2a)
+  Restable_1127_WTvsDM$peak.name <- rownames(Restable_1127_WTvsDM)
+  
+  Restable_1127_WTvs5c <- as.data.frame(Restable_1127_WTvs5c)
+  Restable_1127_WTvs2a <- as.data.frame(Restable_1127_WTvs2a)
+  Restable_1127_WTvsDM <- as.data.frame(Restable_1127_WTvsDM)
+  
+  require(plyr)
+  Restable_all_PC <- join_all(list(Restable_1127_WTvs5c, Restable_1127_WTvs2a, Restable_1127_WTvsDM), by='peak.name')
+  Restable_all_PC$NA. <- NULL
+  Restable_all_PC$NA. <- NULL
+  Restable_all_PC$FCSE_5c <- NULL
+  Restable_all_PC$FCSE_2a <- NULL
+  Restable_all_PC$FCSE_dm <- NULL
+  Restable_all_PC$stat_5c <- NULL
+  Restable_all_PC$stat_2a <- NULL
+  Restable_all_PC$stat_dm <- NULL
+  
+  write.table(Restable_all_PC, file='Restable_all_PC.txt', sep='\t', row.names=FALSE)
+  
+  #select DMR
+  library(dplyr)
+  PC_DMR_5C <- Restable_all_PC %>% filter(padj_5c < 0.05)
+  PC_DMR_2A <- Restable_all_PC %>% filter(p_2a < 0.05)
+  PC_DMR_DM <- Restable_all_PC %>% filter(padj_dm < 0.05)
+  
+  PC_DMR_5C_UP <- subset(PC_DMR_5C, FC_5c > 0)
+  PC_DMR_5C_DOWN <- subset(PC_DMR_5C, FC_5c < 0)
+  PC_DMR_2A_UP <- subset(PC_DMR_2A, FC_2a > 0)
+  PC_DMR_2A_DOWN <- subset(PC_DMR_2A, FC_2a < 0)
+  PC_DMR_DM_UP <- subset(PC_DMR_DM, FC_dm > 0)
+  PC_DMR_DM_DOWN <- subset(PC_DMR_DM, FC_dm < 0)
+  
+  #generate list of reciprocally regulated DMR
+  Recip_DMR_5C <- subset(PC_DMR_5C_UP, FC_2a < -0.1)
+  Recip_DMR_2A <- subset(PC_DMR_2A_DOWN, FC_5c > 0.1)
+  
+  #generate list of same-direction DMR
+  SameD_DMR_5C <- subset(PC_DMR_5C_UP, FC_2a > 0.1)
+  SameD_DMR_2A <- subset(PC_DMR_2A_DOWN, FC_5c < -0.1)
+  
+  #check overlap using BioVenn
+  writeClipboard(Recip_DMR_2A$peak.name)
+  writeClipboard(Recip_DMR_5C$peak.name)
+  
+  #boxplot of reciprocal/SameD DMRs fold changes
+  ##make dataframes of fold changes
+  FC_Recip_DMR_5C <- subset(Recip_DMR_5C, select = c (7,2,11))
+  FC_Recip_DMR_2A <- subset(Recip_DMR_2A, select = c (7,2,11))
+  FC_SameD_DMR_5C <- subset(SameD_DMR_5C, select = c (7,2,11))
+  FC_SameD_DMR_2A <- subset(SameD_DMR_2A, select = c (7,2,11))
+  
+  #making boxplot
+  require(reshape2)
+  library(ggplot2)
+  par(mfrow=c(1,1))
+  
+  install.packages("colourpicker")
+  library(colourpicker)
+  colourPicker()
+  
+  #boxplots of reciprocal/sameD genes
+  ggplot(data = melt(FC_Recip_DMR_5C), aes(x=variable, y=value)) + 
+    geom_boxplot(aes(fill=variable), outlier.shape=NA) + 
+    scale_fill_manual(values=c("#9A32CD", "#32CD32", "#4876FF")) +
+    geom_jitter(width=0.1,alpha=0.1) +
+    xlab('Genotype') +
+    ylab('Log2FC') +
+    ggtitle('Recip_5C_DMRs') +
+    geom_hline(yintercept=0, linetype='solid', size= 1, color='#EE00EE') +
+    ylim(-0.5, 0.8) + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black")) 
+  
+  ggplot(data = melt(FC_SameD_DMR_5C), aes(x=variable, y=value)) + 
+    geom_boxplot(aes(fill=variable), outlier.shape=NA) + 
+    scale_fill_manual(values=c("#9A32CD", "#32CD32", "#4876FF")) +
+    geom_jitter(width=0.1,alpha=0.1) +
+    xlab('Genotype') +
+    ylab('Log2FC') +
+    ggtitle('SameD_5C_DMRs') +
+    geom_hline(yintercept=0, linetype='solid', size= 1, color='#EE00EE') +
+    ylim(-0.5, 0.8) + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black")) 
+  
+  ggplot(data = melt(FC_Recip_DMR_2A), aes(x=variable, y=value)) + 
+    geom_boxplot(aes(fill=variable), outlier.shape=NA) + 
+    scale_fill_manual(values=c("#9A32CD", "#32CD32", "#4876FF")) +
+    geom_jitter(width=0.1,alpha=0.1) +
+    xlab('Genotype') +
+    ylab('Log2FC') +
+    ggtitle('Recip_2A_DMRs') +
+    geom_hline(yintercept=0, linetype='solid', size= 1, color='#EE00EE') +
+    ylim(-0.8, 0.5) + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black")) 
+  
+  ggplot(data = melt(FC_SameD_DMR_2A), aes(x=variable, y=value)) + 
+    geom_boxplot(aes(fill=variable), outlier.shape=NA) + 
+    scale_fill_manual(values=c("#9A32CD", "#32CD32", "#4876FF")) +
+    geom_jitter(width=0.1,alpha=0.1) +
+    xlab('Genotype') +
+    ylab('Log2FC') +
+    ggtitle('SameD_2A_DMRs') +
+    geom_hline(yintercept=0, linetype='solid', size= 1, color='#EE00EE') +
+    ylim(-0.8, 0.5) + 
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black")) 
+  
+  #wilcoxson tests
+  wilcox.test(FC_Recip_DMR_2A$FC_2a, FC_Recip_DMR_2A$FC_dm, paired=TRUE)
+  wilcox.test(FC_Recip_DMR_5C$FC_5c, FC_Recip_DMR_5C$FC_dm, paired=TRUE)
+  wilcox.test(FC_SameD_DMR_2A$FC_2a, FC_SameD_DMR_2A$FC_dm, paired=TRUE)
+  wilcox.test(FC_SameD_DMR_5C$FC_5c, FC_SameD_DMR_5C$FC_dm, paired=TRUE)
+  
+  #scatter plot to visualize reciprocal regulation 
+  ggplot(PC_DMR_5C, aes(x=PC_DMR_5C$FC_5c, y=PC_DMR_5C$FC_2a)) + 
+    geom_point(color='#525366', size = 2, shape = 1) + 
+    geom_point(data=Recip_DMR_5C, aes(x=Recip_DMR_5C$FC_5c, y=Recip_DMR_5C$FC_2a), color='#ed0e34', size = 2, shape = 1) +
+    geom_point(data=SameD_DMR_5C, aes(x=SameD_DMR_5C$FC_5c, y=SameD_DMR_5C$FC_2a), color='#0000FF', size = 2, shape = 1) +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    xlim(-1, 1) +
+    ylim(-1, 1) +
+    xlab('Log2FC_5C_vs_WT') +
+    ylab('Log2FC_2A_vs_WT') +
+    ggtitle('5C_DMR_in_2A') +
+    geom_hline(yintercept=0, linetype='dashed', color='#9b9ba3') +
+    geom_hline(yintercept=0.1, linetype='solid', color='#F0FFFF') +
+    geom_hline(yintercept=-0.1, linetype='solid', color='#F0FFFF') +
+    geom_vline(xintercept=0, linetype='dashed', color='#9b9ba3') 
+  
+  ggplot(PC_DMR_2A, aes(x=PC_DMR_2A$FC_2a, y=PC_DMR_2A$FC_5c)) + 
+    geom_point(color='#525366', size = 2, shape = 1) + 
+    geom_point(data=Recip_DMR_2A, aes(x=Recip_DMR_2A$FC_2a, y=Recip_DMR_2A$FC_5c), color='#ed0e34', size = 2, shape = 1) +
+    geom_point(data=SameD_DMR_2A, aes(x=SameD_DMR_2A$FC_2a, y=SameD_DMR_2A$FC_5c), color='#0000FF', size = 2, shape = 1) +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    xlim(-1, 1) +
+    ylim(-1, 1) +
+    xlab('Log2FC_2A_vs_WT') +
+    ylab('Log2FC_5C_vs_WT') +
+    ggtitle('2A_DMR_in_5C') +
+    geom_hline(yintercept=0, linetype='dashed', color='#9b9ba3') +
+    geom_hline(yintercept=0.1, linetype='solid', color='#F0FFFF') +
+    geom_hline(yintercept=-0.1, linetype='solid', color='#F0FFFF') +
+    geom_vline(xintercept=0, linetype='dashed', color='#9b9ba3') 
+  
+  #Generate list of rescue driver DMRs (Resc_DMRs)
+  #Add column of Difference in 5C-fold change (or 2A fold change) and DM-fold change
+  PC_DMR_2A$FCD_2AvsDM <- (PC_DMR_2A$FC_2a/PC_DMR_2A$FC_dm)
+  PC_DMR_5C$FCD_5CvsDM <- (PC_DMR_5C$FC_5c/PC_DMR_5C$FC_dm)
+  
+  #select Resc_DMR
+  PC_Resc_2A_DMR <- subset(PC_DMR_2A, abs(FCD_2AvsDM) > 2)
+  PC_Resc_2A_DMR <- subset(PC_Resc_2A_DMR, abs(FC_dm) < 5)
+  PC_Resc_5C_DMR <- subset(PC_DMR_5C, abs(FCD_5CvsDM) > 2)
+  PC_Resc_5C_DMR <- subset(PC_Resc_5C_DMR, abs(FC_dm) < 5)
+  
+  #rescue scatterplot
+  library(ggplot2)
+  ggplot(PC_DMR_2A, aes(x=PC_DMR_2A$FC_2a, y=PC_DMR_2A$FC_dm)) + 
+    geom_point(color='#525366', size = 4, shape = 1) + 
+    geom_point(data=PC_Resc_2A_DMR, aes(x=PC_Resc_2A_DMR$FC_2a, y=PC_Resc_2A_DMR$FC_dm), color='#ed0e34', size = 4, shape = 1) +
+    stat_smooth(method=lm, color='#eb1c3f') +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    xlim(-1, 1) +
+    ylim(-1, 1) +
+    xlab('Log2FC_2A_vs_WT') +
+    ylab('Log2FC_DM_vs_WT') +
+    ggtitle('2A_DMR_in_DM') +
+    geom_hline(yintercept=0, linetype='dashed', color='#9b9ba3') +
+    geom_vline(xintercept=0, linetype='dashed', color='#9b9ba3') +
+    geom_segment(x=-1, y=-1, xend=1, yend=1, linetype='solid', color='#9b9ba3')
+  
+  
+  ggplot(PC_DMR_5C, aes(x=PC_DMR_5C$FC_5c, y=PC_DMR_5C$FC_dm)) + 
+    geom_point(color='#525366', size = 4, shape = 1) + 
+    geom_point(data=PC_Resc_5C_DMR, aes(x=PC_Resc_5C_DMR$FC_5c, y=PC_Resc_5C_DMR$FC_dm), color='#ed0e34', size = 4, shape = 1) +
+    stat_smooth(method=lm, color='#eb1c3f') +
+    theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+          panel.background = element_blank(), axis.line = element_line(colour = "black")) +
+    xlim(-1, 1) +
+    ylim(-1, 1) +
+    xlab('Log2FC_5C_vs_WT') +
+    ylab('Log2FC_DM_vs_WT') +
+    ggtitle('5C_DMR_in_DM') +
+    geom_hline(yintercept=0, linetype='dashed', color='#9b9ba3') +
+    geom_vline(xintercept=0, linetype='dashed', color='#9b9ba3') +
+    geom_segment(x=-1, y=-1, xend=1, yend=1, linetype='solid', color='#9b9ba3')
+
+#test the regression line differ from 1
+  install.packages("smatr")
+  library("smatr")
+Slope.test_2AvsDM <- slope.test(PC_DMR_2A$FC_dm, PC_DMR_2A$FC_2a, test.value = 1, method = 0,
+                                  alpha = 0.05, intercept = FALSE, robust=FALSE)
+Slope.test_5CvsDM <- slope.test(PC_DMR_5C$FC_dm, PC_DMR_5C$FC_5c, test.value = 1, method = 0,
+                                alpha = 0.05, intercept = FALSE, robust=FALSE)  
+
+  
+  ##PCAplots
+  vsd <- vst(dds_1127, blind = FALSE)  
+  head(assay(vsd), 3)
+  plotPCA(vsd, intgroup = c("genotype"))
