@@ -30,6 +30,7 @@ dds <- estimateSizeFactors(dds_1127_run)
 sizeFactors(dds)
 
 #snap sizefactors
+#You want to calculate the size factor based on library size and how much spike-in reads were obtained. I believe the sizefactor will be used to 'divide' the count data. So more the spike in reads (high IP efficiency), the larger the sizefactor.  
 
 sizeFactors(dds_1127_run) <- c(1, 1.16, 1.18, 1.01, 1.01, 1.00, 1.07, 0.96, 1.19, 0.99, 1.13)
 sizeFactors(dds_1127_run) 
