@@ -7,6 +7,8 @@
 
 1. Make new directory at /scratch/webserver/siwase (replace siwase with your directory)
 2. Move the bigwig files to webserver directory. /scratch/webserver/siwase/new_directory/new.bw
+#If you have never linked your folder to the webserver before you need to run
+#ln -s /scratch/webserver/yourfolder /srv/www/html/pub/public/iwaselab
 3. Go to UCSC browser, select the genome, My Data --> Custum track
 4. track type=bigWig name="H3K4me1_0h_JF1_rep1" 
 5. Past follwoing to the URL box (change parameters as needed, see instruction at UCSC browser)
